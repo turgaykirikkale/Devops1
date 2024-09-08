@@ -4,98 +4,41 @@ provider "aws" {
 }
 data "aws_availability_zones" "available" {}
 data "aws_region" "current" {}
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"] # Canonical
+module "vpc" {
+  source         = "./modules/vpc"
+  vpc_name       = "000001"
+  vpc_cidr_block = "10.0.0.0/16"
 }
-
-resource "aws_vpc" "vpc" {
-  cidr_block = var.vpc_cidr
-  tags = {
-    Name        = var.vpc_name
-    Environment = "devops1 env"
-    Terraform   = "true"
-  }
+module "public_subnet" {
+  source                  = "./modules/subnet"
+  vpc_id                  = module.vpc.vpc_id
+  type                    = "Public"
+  cidr_block              = cidrsubnet(module.vpc.vpc_cidr_block, 8, 100)
+  map_public_ip_on_launch = true
+  availability_zones      = data.aws_availability_zones.available.names
+  environment             = "Dev"
+  name                    = "public_subnet"
+  availability_zone_index = 0
 }
-
-
-resource "aws_subnet" "private_subnet" {
-  vpc_id            = aws_vpc.vpc.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 8, 0)
-  availability_zone = data.aws_availability_zones.available.all_availability_zones
-  tags = {
-    Name      = "private_subnet"
-    Terraform = true
-  }
+module "private_subnet" {
+  source                  = "./modules/subnet"
+  vpc_id                  = module.vpc.vpc_id
+  type                    = "Private"
+  cidr_block              = cidrsubnet(module.vpc.vpc_cidr_block, 8, 0)
+  availability_zones      = data.aws_availability_zones.available.names
+  environment             = "Dev"
+  name                    = "private_subnet"
+  availability_zone_index = 1
 }
-
-resource "aws_subnet" "public_subnet" {
-  vpc_id            = aws_vpc.vpc.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 8, 100)
-  availability_zone = data.aws_availability_zones.available.all_availability_zones
-  tags = {
-    Name      = "public_subnet"
-    Terraform = true
-  }
-}
-
-resource "aws_instance" "public_instance" {
-  ami           = data.aws_ami.ubuntu.id
+module "public_instace" {
+  source        = "./modules/ec2"
+  subnet_id     = module.public_subnet.subnet_id
   instance_type = "t3.micro"
-  subnet_id     = aws_subnet.public_subnet.id
-
-  tags = {
-    Name = "Public Instance"
-  }
+  instance_name = "public_instance"
 }
-
-resource "aws_instance" "private_instance" {
-  ami           = data.aws_ami.ubuntu.id
+module "private_instace" {
+  source        = "./modules/ec2"
+  subnet_id     = module.private_subnet.subnet_id
   instance_type = "t3.micro"
-  subnet_id     = aws_subnet.private_subnet.id
-
-  tags = {
-    Name = "Private Instance"
-  }
-}
-
-output "vpc_name" {
-  value = aws_vpc.vpc.tags.Name
-}
-output "vpc_id" {
-  value = aws_vpc.vpc.id
-}
-output "vpc_cidr" {
-  value = aws_vpc.vpc.cidr_block
-}
-output "aws_private_subnet_cidr" {
-  value = aws_subnet.private_subnet.cidr_block
-}
-output "aws_public_subnet_cidr" {
-  value = aws_subnet.public_subnet.cidr_block
-}
-
-output "aws_public_instance_ip" {
-  value = aws_instance.public_instance.public_ip
-}
-output "aws_public_dns" {
-  value = aws_instance.public_instance.public_dns
-}
-output "aws_private_intance_ip" {
-  value = aws_instance.private_instance.public_ip
-}
-
-output "aws_private_intance_dns" {
-  value = aws_instance.private_instance.public_dns
+  instance_name = "private_instance"
 }
