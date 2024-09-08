@@ -1,5 +1,6 @@
 provider "aws" {
   region = "us-east-1"
+  //environment Access ve Secret Acces Key
 }
 data "aws_availability_zones" "available" {}
 data "aws_region" "current" {}
