@@ -1,0 +1,1 @@
+//here the outputs that ı want to reach 
