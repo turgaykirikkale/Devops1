@@ -115,16 +115,16 @@ module "public_instace" {
   instance_profile    = module.iam_role_001.instance_profile_id
   user_data_script    = <<-EOF
   #!/bin/bash
-  set -x  # Debug modunu açar
-  echo "Başladı" > /tmp/debug.log
+  set -x  # Debug mode open
+  echo "staterted" > /tmp/debug.log
   sudo apt-get update -y
-  echo "apt-get update tamamlandı" >> /tmp/debug.log
-  sudo apt-get install -y awscli  # AWS CLI'ı yükler
-  echo "AWS CLI yüklendi" >> /tmp/debug.log
+  echo "apt-get update completed" >> /tmp/debug.log
+  sudo apt-get install -y awscli  # AWS CLI'ı upload
+  echo "AWS CLI uploaded" >> /tmp/debug.log
   echo "Hello, this is a test file!" > /tmp/turgay.txt
-  echo "Dosya oluşturuldu" >> /tmp/debug.log
+  echo "Dosya was created" >> /tmp/debug.log
   aws s3 cp /tmp/turgay.txt s3://${module.s3_bucket.bucket_name}/turgay.txt
-  echo "Dosya yüklendi" >> /tmp/debug.log
+  echo "Dosya uploaded" >> /tmp/debug.log
 EOF
 
 
