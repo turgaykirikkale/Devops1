@@ -18,11 +18,13 @@ variable "is_public" {
 variable "internet_gateway_id" {
   type        = string
   description = "Internet Gateway ID for Public Route Table"
+  default     = null
 }
 
 variable "nat_gateway_id" {
   type        = string
   description = "NAT Gateway ID for Private Route Table"
+  default     = null
 }
 
 variable "public_subnet_id" {

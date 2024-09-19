@@ -5,8 +5,8 @@ resource "aws_route_table" "route_table" {
 
   route {
     cidr_block     = "0.0.0.0/0"
-    gateway_id     = var.is_public ? var.internet_gateway_id : null
-    nat_gateway_id = var.is_public ? null : var.nat_gateway_id
+    gateway_id     = var.internet_gateway_id != null ? var.internet_gateway_id : null
+    nat_gateway_id = var.nat_gateway_id != null ? var.nat_gateway_id : null
   }
   tags = {
     Name = "${var.rt_name}/ ${var.vpc_id}"

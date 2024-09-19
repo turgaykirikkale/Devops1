@@ -22,6 +22,9 @@ resource "aws_instance" "instance" {
   instance_type          = var.instance_type
   subnet_id              = var.subnet_id
   vpc_security_group_ids = var.use_security_groups
+  iam_instance_profile   = var.instance_profile != null ? var.instance_profile : null
+  user_data              = var.user_data_script != null ? var.user_data_script : null
+
   tags = {
     Name = var.instance_name
   }
